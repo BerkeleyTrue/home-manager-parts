@@ -27,7 +27,7 @@
         ...
       }: let
         build-home = pkgs.writeShellScriptBin "build-home" ''
-          nix build --show-trace --out-link --print-build-logs .\#homeConfigurations.$1.activationPackage
+          nix build --show-trace --print-build-logs .\#homeConfigurations.$1.activationPackage
         '';
       in {
         devShells.default = pkgs.mkShell {
