@@ -1,6 +1,6 @@
 {
   description = "A `flake-parts` home-manager integration";
-  output = { ... } : {
+  outputs = {...}: {
     flakeModule = ./nix/flake-module.nix;
   };
 }
