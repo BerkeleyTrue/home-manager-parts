@@ -92,10 +92,7 @@
                 ...
               }: {
                 home.packages = [
-                  pkgs.hello.overrideAttrs
-                  (old: {
-                    name = "hello-${hello}";
-                  })
+                  hello
                 ];
               })
             ];

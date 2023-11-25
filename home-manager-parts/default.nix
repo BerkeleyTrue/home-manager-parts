@@ -67,6 +67,7 @@ in
             ...
           }: let
             profile = config;
+            pkgs = withSystem profile.system ({pkgs, ...}: pkgs);
           in {
             options = {
               enable = mkOption {
@@ -101,7 +102,10 @@ in
               directory = mkOption {
                 type = types.str;
                 description = mdDoc "The home directory passed to home-manager, or `home.homeDirectory`";
-                default = "/home/${profile.username}";
+                default =
+                  if pkgs.stdenv.isDarwin
+                  then "/Users/${profile.username}"
+                  else "/home/${profile.username}";
               };
 
               home-manager = mkOption {
@@ -156,7 +160,6 @@ in
             };
 
             config = let
-              pkgs = withSystem profile.system ({pkgs, ...}: pkgs);
               sharedCfg =
                 if lib.isFunction cfg.shared
                 then
