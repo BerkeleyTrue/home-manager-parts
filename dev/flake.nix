@@ -100,6 +100,28 @@
               })
             ];
           };
+
+          desktop = {
+            username = "big-berks";
+            modules = [
+              {
+                xdg.configFile."foo/barrc".text = ''
+                  super-lame=config
+                '';
+              }
+            ];
+          };
+
+          laptop = {
+            username = "big-berks";
+            modules = [
+              {
+                xdg.configFile."foo/barrc".text = ''
+                  super-cool=config
+                '';
+              }
+            ];
+          };
         };
       };
     };
