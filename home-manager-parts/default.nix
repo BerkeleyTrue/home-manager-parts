@@ -65,7 +65,9 @@ in
             name, # Key of the profile?
             config,
             ...
-          }: {
+          }: let
+            profile = config;
+          in {
             options = {
               enable = mkOption {
                 type = types.bool;
@@ -76,7 +78,7 @@ in
               directory = mkOption {
                 type = types.str;
                 description = mdDoc "The home directory passed to home-manager, or `home.homeDirectory`";
-                default = "/home/${name}";
+                default = "/home/${profile.username}";
               };
 
               home-manager = mkOption {
@@ -137,40 +139,38 @@ in
             };
 
             config = let
-              profile = config;
               pkgs = withSystem profile.system ({pkgs, ...}: pkgs);
               sharedCfg =
                 if lib.isFunction cfg.shared
-                then cfg.shared {inherit name profile pkgs;}
+                then
+                  cfg.shared {
+                    inherit pkgs;
+                    profile = name;
+                  }
                 else throw "home-manager-parts.shared must be a function";
             in
               lib.mkIf profile.enable {
                 finalModules =
                   sharedCfg.modules
+                  ++ profile.modules
                   ++ [
                     {
+                      home.stateVersion = lib.mkDefault profile.stateVersion;
                       home.homeDirectory = lib.mkDefault profile.directory;
                       home.username = lib.mkDefault profile.username;
                     }
-                  ]
-                  ++ profile.modules;
+                  ];
 
                 homeConfigOutput = profile.home-manager.lib.homeManagerConfiguration {
                   inherit pkgs;
 
                   extraSpecialArgs = lib.recursiveUpdate sharedCfg.extraSpecialArgs profile.specialArgs;
 
-                  modules =
-                    [
-                      (_: {
-                        home.stateVersion = lib.mkDefault profile.stateVersion;
-                      })
-                    ]
-                    ++ profile.finalModules;
+                  modules = profile.finalModules;
                 };
 
                 activationPackage = {
-                  ${profile.system}."home/${name}" = profile.homeConfigOutput.activationPackage;
+                  ${profile.system}."activate-${name}" = profile.homeConfigOutput.activationPackage;
                 };
               };
           }));
@@ -181,7 +181,7 @@ in
     config = lib.mkMerge [
       (lib.mkIf cfg.enable (let
         # group checks into system-based sortings
-        # packages.<system>."home/<name>" = homeConfigurationOutput.activationPackage
+        # packages.<system>."activate-<name>" = homeConfigurations.<name>.activationPackage
         packages =
           lib.zipAttrs
           (builtins.attrValues
@@ -192,7 +192,7 @@ in
                 else {})
               cfg.profiles));
       in {
-        # homes.<name> = <homeManagerConfiguration>
+        # homes.<username> = <homeManagerConfiguration>
         flake.homeConfigurations =
           builtins.mapAttrs
           (_: profile: profile.homeConfigOutput)

@@ -27,6 +27,8 @@
         ...
       }: let
         build-home = pkgs.writeShellScriptBin "build-home" ''
+          # check if we are in a home-manager environment
+          echo "building home-manager environment for $1"
           nix build --show-trace --print-build-logs .\#homeConfigurations.$1.activationPackage
         '';
       in {
@@ -55,14 +57,48 @@
           profile,
           ...
         }: {
-          extraSpecialArgs = {
-            foo = "bar";
+          extraSpecialArgs = rec {
+            name =
+              if profile == "bill"
+              then "ted"
+              else "bill";
+            hello = pkgs.writeShellScriptBin "hello" ''
+              #!/usr/bin/env bash
+              echo "hello ${name}"
+            '';
           };
         };
 
         profiles = {
           bill = {
-            modules = [];
+            modules = [
+              ({
+                hello,
+                pkgs,
+                ...
+              }: {
+                home.packages = [
+                  hello
+                ];
+              })
+            ];
+          };
+
+          ted = {
+            modules = [
+              ({
+                hello,
+                pkgs,
+                ...
+              }: {
+                home.packages = [
+                  pkgs.hello.overrideAttrs
+                  (old: {
+                    name = "hello-${hello}";
+                  })
+                ];
+              })
+            ];
           };
         };
       };

@@ -59,12 +59,12 @@
     "home-manager-parts": {
       "locked": {
         "lastModified": 0,
-        "narHash": "sha256-WpAWPf6YDzLAA+aPqjbM5+PloNU4S4XubaTplGdwKC0=",
-        "path": "/nix/store/19xdybnl3y66msnc9b7vsm5hmq3yfmrw-source",
+        "narHash": "sha256-b4DRFKKpQOD1qAEh8tRrGvltzxvfCSwEmqLvjUKB8G8=",
+        "path": "/nix/store/8fmr730j66wzlxsgn9c8ffcpq26jgrnr-source",
         "type": "path"
       },
       "original": {
-        "path": "/nix/store/19xdybnl3y66msnc9b7vsm5hmq3yfmrw-source",
+        "path": "/nix/store/8fmr730j66wzlxsgn9c8ffcpq26jgrnr-source",
         "type": "path"
       }
     },
