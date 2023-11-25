@@ -75,6 +75,29 @@ in
                 default = cfg.enable;
               };
 
+              username = mkOption {
+                type = types.str;
+                description = mdDoc "The username passed to home-manager, or `home.username`. Defaults to the profile name";
+                default = name;
+              };
+
+              hostname = mkOption {
+                type = types.str;
+                description = mdDoc ''
+                  The hostname for this profile.
+                  If username is not the same as profile name, then it is assumed that profile is a hostname
+                  and hostname is set to the profile name.
+                  Otherwise, hostname is set to null.
+
+                  This is used to set #homeConfigurations.<username>@<hostname> in addition to #homeConfigurations.profile.
+                  This supports multiple profiles with the same username, but different hostnames.
+                '';
+                default =
+                  if profile.username != name
+                  then name
+                  else "";
+              };
+
               directory = mkOption {
                 type = types.str;
                 description = mdDoc "The home directory passed to home-manager, or `home.homeDirectory`";
@@ -109,12 +132,6 @@ in
                 type = types.str;
                 description = mdDoc "stateVersion used for building the homeManagerConfiguration, defaults to `defaults.stateVersion`";
                 default = cfg.defaults.stateVersion;
-              };
-
-              username = mkOption {
-                type = types.str;
-                description = mdDoc "The username passed to home-manager, or `home.username`. Defaults to the profile name";
-                default = name;
               };
 
               # readOnly
@@ -192,11 +209,19 @@ in
                 else {})
               cfg.profiles));
       in {
-        # homes.<username> = <homeManagerConfiguration>
+        # homeConfigurations.<username> = <homeManagerConfiguration>
+        # homeConfigurations.<username>@<hostname> = <homeManagerConfiguration>
         flake.homeConfigurations =
           builtins.mapAttrs
           (_: profile: profile.homeConfigOutput)
-          cfg.profiles;
+          cfg.profiles
+          // builtins.foldl'
+          (acc: profile:
+            if profile.hostname != ""
+            then acc // {"${profile.username}@${profile.hostname}" = profile.homeConfigOutput;}
+            else acc)
+          {}
+          (builtins.attrValues cfg.profiles);
 
         perSystem = {system, ...}: {
           packages = lib.mkIf (cfg.exposePackages && (builtins.hasAttr system packages)) (lib.mkMerge packages.${system});
