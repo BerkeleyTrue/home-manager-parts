@@ -40,6 +40,10 @@
         };
       };
 
+      flake = {
+        schemas.homeConfigurations = inputs.home-manager-parts.schemas;
+      };
+
       home-manager-parts = {
         enable = true;
 
